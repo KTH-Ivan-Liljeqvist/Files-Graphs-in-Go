@@ -1,0 +1,17 @@
+// This is a database with distances between a number
+// of cities. The cities are numbered 0, 1, 2, ..., n-1.
+// The first lines contains the integer n, i.e. the
+// number of cities. Each following line contains three
+// integers i, j, and d separated by spaces. The positive
+// number d is the distance between i and j.
+
+6        // Size
+
+0 1 100  // First edge
+0 3 80
+0 5 25
+1 2 120
+1 5 60
+2 3 50
+3 4 100
+4 5 200  // Last edge
