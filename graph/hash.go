@@ -49,7 +49,7 @@ func (g *Hash) Degree(v int) int {
 // DoNeighbors calls action for each neighbor w of v,
 // with x equal to the label of the edge from v to w.
 // Time complexity: O(m), where m is the number of neighbors.
-func (g *Hash) DoNeighbors(v int, action func(w int, x interface{})) {
+func (g *Hash) DoNeighbors(v int, action func(from, w int, x interface{})) {
 
 	//first we need to get all the neighbours w of v
 	//we get the neighbours by looking in the edges
@@ -58,7 +58,7 @@ func (g *Hash) DoNeighbors(v int, action func(w int, x interface{})) {
 	//w_plural is a map with mapping {w:label}
 	//we take out w and label and call action
 	for w, label := range w_plural {
-		action(w, label)
+		action(v, w, label)
 	}
 
 }

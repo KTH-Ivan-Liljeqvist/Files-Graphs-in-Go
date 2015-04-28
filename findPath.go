@@ -1,8 +1,12 @@
 // Stefan Nilsson 2014-04-20
 // Radically modified and completed by Ivan Liljeqvist 2015-04-27
 
-// Grep searches the input file for lines containing the given pattern and
-// prints these lines. It is a simplified version of the Unix grep command.
+/*
+	You give this function a file containing a graph and two nodes in that graph.
+	The program will print the shortes path (with as few nodes as possible) between those nodes.
+	If no path is found an empty row will be printed.
+*/
+
 package main
 
 import (
@@ -25,7 +29,7 @@ type Grapher interface {
 	NumVertices() int
 	NumEdges() int
 	Degree(int) int
-	DoNeighbors(int, func(int, interface{}))
+	DoNeighbors(int, func(int, int, interface{}))
 	HasEdge(int, int) bool
 	Label(int, int) interface{}
 	Add(int, int)
@@ -36,18 +40,18 @@ type Grapher interface {
 	RemoveBi(int, int)
 }
 
-const prog = "grep"
-
-func init() {
-	log.SetPrefix(prog + ": ")
-	log.SetFlags(0) // no extra info in log messages
-}
+/*
+	Main function.
+	Checks the parameters from the Terminal.
+	Constructs the graph from file.
+	Prints the path from 'FROM'-node to 'TO'-node.
+*/
 
 func main() {
 
 	//check so that the arguments aare correct
 	if len(os.Args) != 4 {
-		log.Fatalf("usage: %s FROM TO FILE\n", prog)
+		log.Fatalf("usage: FROM TO FILE\n")
 	}
 	from, from_error := strconv.Atoi(os.Args[1])
 
@@ -64,6 +68,14 @@ func main() {
 	//get the pattern from the arguments
 	filepath := os.Args[3]
 
+	if from < 0 {
+		panic("FROM argument can't be less than zero.")
+	}
+
+	if to < 0 {
+		panic("TO argument can't be less than zero.")
+	}
+
 	//construct the graph from the file
 	g := constructGraph(filepath)
 
@@ -74,22 +86,97 @@ func main() {
 	getPath(from, to, g)
 }
 
+/*
+	Finds the shortest (as few nodes as possible) way from 'from' node to 'to' node
+	in the 'g' graph.
+
+	Prints out the results if a path is found.
+	Prints out an empty line if there is no path between the nodes.
+*/
+
 func getPath(from, to int, g Grapher) {
+
+	const INDEX_HAS_NO_PARENT = -1
 
 	visited := make([]bool, g.NumVertices())
 
-	count := 0
+	stack := make([]int, g.NumEdges())
+	for i, _ := range stack {
+		stack[i] = INDEX_HAS_NO_PARENT
+	}
 
-	graph.BFS(g, from, visited, func(w int) {
-		count++
+	graph.BFS(g, from, visited, func(parent, w int) {
 
-		if to == w {
-			fmt.Println(count)
-		}
+		//save the parent of each node
+		stack[w] = parent
 
 	})
 
+	//this array will contain the path to our goal
+	var path []int
+
+	//put the goal as the first value in the path
+	//we're building this backwards, this will be reversed at the end
+	index := to
+	path = append(path, index)
+
+	//flag that will be set to false when we've found the goal-node
+	searching := true
+
+	if index > len(stack) {
+		panic("THE NODE YOU'RE SEARCHING FOR DOESNT EVEN EXIST IN THE GRAPH!")
+	}
+
+	for stack[index] != INDEX_HAS_NO_PARENT {
+		//get parent of the index
+		//in the first iteration it will get the parent of the goal
+		//in the second - the grandparent of the goal, until we reach starting point (from)
+		prev := stack[index]
+		index = prev
+		//save parent to the path
+		path = append(path, index)
+
+		//abort search if we've reached the starting point
+		//this means we've went backwards from the goal to starting point
+		if index == from {
+			searching = false
+			break
+		}
+	}
+
+	//if the node is found - we're not longer searching
+	if searching == false {
+		reverseSlice(path)
+		fmt.Println("Path from ", from, " to ", to, ": ", path)
+	} else {
+		//node not found - just print empty line.
+		fmt.Println(" ")
+	}
+
 }
+
+/*
+	Returns a reversed version of the slice passed in as the parameter.
+*/
+
+func reverseSlice(slice []int) {
+	length := len(slice)
+
+	//go through the array and switch from both sides.
+	for i := 0; i < length/2; i++ {
+		temp := slice[i]
+		slice[i] = slice[length-i-1]
+		slice[length-i-1] = temp
+	}
+}
+
+/*
+	This methods constructs a undirected graph from the file found
+	at the file path passed in as the parameter.
+
+	Returns a Grapher object with a hash graph containing all
+	the connections as in the file.
+*/
 
 func constructGraph(filepath string) (g Grapher) {
 	//open file
@@ -162,7 +249,7 @@ func constructGraph(filepath string) (g Grapher) {
 
 			if shouldAttachToGraph {
 				//attach the information from this line to the graph
-				g.AddLabel(from, to, label)
+				g.AddBiLabel(from, to, label)
 			}
 
 		}

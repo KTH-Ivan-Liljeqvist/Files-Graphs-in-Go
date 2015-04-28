@@ -12,6 +12,18 @@
 // graph.Matrix is best suited for dense graphs.
 // The edges are represented by an adjacency matrix.
 // Hence, space complexity is Θ(n*n), where n is the number of vertices.
+
+/*
+	Modified by Ivan Liljeqvist 28-04-2014.
+
+	I needed the 'action' function passed in as parameter to BFS
+	to have a 'from' parameter to track the parent of the node 'w'.
+
+	I didn't see any restrictions in the task telling that it's not allowed
+	to alter graph.go and therefore I changed the 'action' function.
+
+*/
+
 package graph
 
 // NoLabel represents an edge with no label.
@@ -27,7 +39,7 @@ type Iterator interface {
 
 	// DoNeighbors calls action for each neighbor w of v,
 	// with x equal to the label of the edge from v to w.
-	DoNeighbors(v int, action func(w int, x interface{}))
+	DoNeighbors(v int, action func(from, w int, x interface{}))
 }
 
 // BFS traverses the vertices of g that have not yet been visited
@@ -35,7 +47,7 @@ type Iterator interface {
 // The visited array keeps track of visited vertices.
 // When the algorithm arrives at a node w for which visited[w] is false,
 // action(w) is called and visited[w] is set to true.
-func BFS(g Iterator, v int, visited []bool, action func(w int)) {
+func BFS(g Iterator, v int, visited []bool, action func(from, w int)) {
 	traverse(g, v, visited, action, bfs)
 }
 
@@ -44,7 +56,7 @@ func BFS(g Iterator, v int, visited []bool, action func(w int)) {
 // The visited array keeps track of visited vertices.
 // When the algorithm arrives at a node w for which visited[w] is false,
 // action(w) is called and visited[w] is set to true.
-func DFS(g Iterator, v int, visited []bool, action func(w int)) {
+func DFS(g Iterator, v int, visited []bool, action func(from, w int)) {
 	traverse(g, v, visited, action, dfs)
 }
 
@@ -53,13 +65,16 @@ const (
 	dfs
 )
 
-func traverse(g Iterator, v int, visited []bool, action func(w int), order int) {
+func traverse(g Iterator, v int, visited []bool, action func(from, w int), order int) {
+
+	const INDEX_HAS_NO_PARENT = -1
+
 	var queue []int
 
 	if visited[v] {
 		return
 	}
-	visit(v, &queue, visited, action)
+	visit(INDEX_HAS_NO_PARENT, v, &queue, visited, action)
 	for len(queue) > 0 {
 		switch order {
 		case bfs: // pop from fifo queue
@@ -68,16 +83,16 @@ func traverse(g Iterator, v int, visited []bool, action func(w int), order int) 
 			i := len(queue) - 1
 			v, queue = queue[i], queue[:i]
 		}
-		g.DoNeighbors(v, func(w int, _ interface{}) {
+		g.DoNeighbors(v, func(v, w int, _ interface{}) {
 			if !visited[w] {
-				visit(w, &queue, visited, action)
+				visit(v, w, &queue, visited, action)
 			}
 		})
 	}
 }
 
-func visit(v int, queue *[]int, visited []bool, action func(w int)) {
+func visit(from, v int, queue *[]int, visited []bool, action func(from, w int)) {
 	visited[v] = true
-	action(v)
+	action(from, v)
 	*queue = append(*queue, v)
 }
