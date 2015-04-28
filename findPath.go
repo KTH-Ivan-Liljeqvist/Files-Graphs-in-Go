@@ -2,7 +2,7 @@
 // Radically modified and completed by Ivan Liljeqvist 2015-04-27
 
 /*
-	You give this function a file containing a graph and two nodes in that graph.
+	You give this program a file containing a graph and two nodes in that graph.
 	The program will print the shortes path (with as few nodes as possible) between those nodes.
 	If no path is found an empty row will be printed.
 */
