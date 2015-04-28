@@ -171,7 +171,7 @@ func reverseSlice(slice []int) {
 }
 
 /*
-	This methods constructs a undirected graph from the file found
+	This methods constructs an undirected graph from the file found
 	at the file path passed in as the parameter.
 
 	Returns a Grapher object with a hash graph containing all
