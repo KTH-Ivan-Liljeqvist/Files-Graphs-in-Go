@@ -156,7 +156,7 @@ func getPath(from, to int, g Grapher) {
 }
 
 /*
-	Returns a reversed version of the slice passed in as the parameter.
+	Reverses the slice passed in as the parameter.
 */
 
 func reverseSlice(slice []int) {
@@ -241,6 +241,7 @@ func constructGraph(filepath string) (g Grapher) {
 					}
 				} else {
 					//string counldt be converted to int
+					panic("Error constructing the graph. File is structured in a wrong way. Couldn't convert a value to int.")
 				}
 
 				currentWord++
